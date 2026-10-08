@@ -1,0 +1,941 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Logistik & Katalog - Angkatan Beruang Merah</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SheetJS (Excel) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- jsPDF & AutoTable -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/plugin.jspdf.autotable.min.js"></script>
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Google Fonts: Bebas Neue & Plus Jakarta Sans -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Custom Theme CSS -->
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="bg-red-950/10 text-stone-800 font-sans min-h-screen pb-12">
+    <!-- HEADER / NAVBAR - BERUANG MERAH THEME -->
+    <header
+      class="bg-gradient-to-r from-red-950 via-red-900 to-stone-900 text-white shadow-xl sticky top-0 z-40 border-b-4 border-red-600"
+    >
+      <div
+        class="max-w-7xl mx-auto px-4 py-3.5 flex flex-col sm:flex-row justify-between items-center gap-4"
+      >
+        <div class="flex items-center space-x-3.5">
+          <div
+            class="bg-red-600 text-white p-2 rounded-2xl font-bold flex items-center justify-center shadow-lg border-2 border-red-500/50"
+          >
+            <picture>
+              <img
+                src="Logo.jpg"
+                alt="Logo Mapala Beruang Merah"
+                class="w-9 h-9 object-cover rounded-full inline-block"
+              />
+            </picture>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span
+                class="bg-red-600/30 text-red-400 text-[10px] font-extrabold uppercase px-2 py-0.5 rounded border border-red-500/30 tracking-widest"
+                >Korsa Beruang Merah</span
+              >
+            </div>
+            <h1
+              class="text-lg sm:text-xl font-extrabold tracking-wide font-['Bebas_Neue'] text-red-100 letter-spacing-wide"
+            >
+              SISTEM LOGISTIK & KATALOG ALAT
+            </h1>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="text-right">
+            <span
+              id="adminStatusText"
+              class="text-xs font-semibold text-stone-300 block"
+              >Mode Publik</span
+            >
+            <span
+              id="adminBadge"
+              class="text-[10px] bg-red-950 border border-red-800/80 text-red-400 px-2.5 py-0.5 rounded-full font-mono font-bold shadow-inner"
+              >LOCKED</span
+            >
+          </div>
+          <button
+            onclick="toggleAdminMode()"
+            class="bg-red-600 hover:bg-red-500 text-white text-xs px-3.5 py-2 rounded-xl font-bold transition-all shadow-md border border-red-500 flex items-center gap-1.5"
+          >
+            <span>🔐</span> Admin Mode
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="max-w-7xl mx-auto px-4 mt-6 space-y-6">
+      <!-- STATS CARDS -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div
+          onclick="filterByStat('total')"
+          class="cursor-pointer bg-white p-4 rounded-2xl shadow-sm border-2 border-stone-200 relative overflow-hidden group hover:border-red-600 transition-all"
+        >
+          <div
+            class="absolute -right-4 -bottom-4 text-stone-100 font-black text-6xl select-none pointer-events-none group-hover:text-red-50 transition-colors"
+          >
+            01
+          </div>
+          <p class="text-xs font-bold text-stone-400 uppercase tracking-wider">
+            Total Alat
+          </p>
+          <h3
+            id="stat-total"
+            class="text-2xl font-black text-stone-900 mt-1 font-['Bebas_Neue']"
+          >
+            0
+          </h3>
+        </div>
+        <div
+          onclick="filterByStat('layak')"
+          class="cursor-pointer bg-white p-4 rounded-2xl shadow-sm border-2 border-stone-200 relative overflow-hidden group hover:border-emerald-600 transition-all"
+        >
+          <div
+            class="absolute -right-4 -bottom-4 text-stone-100 font-black text-6xl select-none pointer-events-none group-hover:text-emerald-50 transition-colors"
+          >
+            02
+          </div>
+          <p class="text-xs font-bold text-stone-400 uppercase tracking-wider">
+            Layak Pakai
+          </p>
+          <h3
+            id="stat-baik"
+            class="text-2xl font-black text-emerald-600 mt-1 font-['Bebas_Neue']"
+          >
+            0
+          </h3>
+        </div>
+        <div
+          onclick="filterByStat('rusak')"
+          class="cursor-pointer bg-white p-4 rounded-2xl shadow-sm border-2 border-stone-200 relative overflow-hidden group hover:border-rose-600 transition-all"
+        >
+          <div
+            class="absolute -right-4 -bottom-4 text-stone-100 font-black text-6xl select-none pointer-events-none group-hover:text-rose-50 transition-colors"
+          >
+            03
+          </div>
+          <p class="text-xs font-bold text-stone-400 uppercase tracking-wider">
+            Perlu Repair
+          </p>
+          <h3
+            id="stat-rusak"
+            class="text-2xl font-black text-rose-600 mt-1 font-['Bebas_Neue']"
+          >
+            0
+          </h3>
+        </div>
+        <div
+          onclick="filterByStat('dipinjam')"
+          class="cursor-pointer bg-white p-4 rounded-2xl shadow-sm border-2 border-stone-200 relative overflow-hidden group hover:border-amber-600 transition-all"
+        >
+          <div
+            class="absolute -right-4 -bottom-4 text-stone-100 font-black text-6xl select-none pointer-events-none group-hover:text-amber-50 transition-colors"
+          >
+            04
+          </div>
+          <p class="text-xs font-bold text-stone-400 uppercase tracking-wider">
+            Dipinjam / Ekspedisi
+          </p>
+          <h3
+            id="stat-dipinjam"
+            class="text-2xl font-black text-amber-600 mt-1 font-['Bebas_Neue']"
+          >
+            0
+          </h3>
+        </div>
+      </div>
+
+      <!-- NAVIGATION TABS -->
+      <div
+        class="flex border-b-2 border-stone-300 overflow-x-auto no-scrollbar bg-white rounded-t-2xl px-2 shadow-sm gap-2"
+      >
+        <button
+          onclick="switchTab('katalog')"
+          id="tab-katalog"
+          class="whitespace-nowrap px-5 py-3 text-xs font-extrabold border-b-4 border-red-600 text-red-700 transition-all uppercase tracking-wider"
+        >
+          📦 Katalog Alat
+        </button>
+        <button
+          onclick="switchTab('peminjaman')"
+          id="tab-peminjaman"
+          class="whitespace-nowrap px-5 py-3 text-xs font-extrabold text-stone-500 hover:text-stone-800 transition-all uppercase tracking-wider"
+        >
+          📋 Peminjaman Pribadi/Tim
+        </button>
+        <button
+          onclick="switchTab('ekspedisi')"
+          id="tab-ekspedisi"
+          class="whitespace-nowrap px-5 py-3 text-xs font-extrabold text-stone-500 hover:text-stone-800 transition-all uppercase tracking-wider"
+        >
+          🏔️ Ekspedisi & Checklist
+        </button>
+        <button
+          onclick="switchTab('maintenance')"
+          id="tab-maintenance"
+          class="whitespace-nowrap px-5 py-3 text-xs font-extrabold text-stone-500 hover:text-stone-800 transition-all uppercase tracking-wider"
+        >
+          🛠️ Riwayat Perbaikan
+        </button>
+      </div>
+
+      <!-- SECTION: KATALOG ALAT -->
+      <section id="section-katalog" class="space-y-4">
+        <div
+          class="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-3 bg-white p-4 rounded-b-2xl rounded-tr-2xl shadow-sm border-2 border-stone-200"
+        >
+          <div class="flex flex-wrap items-center gap-2">
+            <input
+              type="text"
+              id="searchInput"
+              onkeyup="searchItems()"
+              placeholder="Cari kode atau nama alat..."
+              class="text-xs border-2 border-stone-200 rounded-xl px-3.5 py-2.5 w-full sm:w-64 focus:border-red-600"
+            />
+            <select
+              id="filterKategori"
+              onchange="fetchItems()"
+              class="text-xs border-2 border-stone-200 rounded-xl px-3.5 py-2.5 bg-white font-medium focus:border-red-600"
+            >
+              <option value="Semua">Semua Kategori</option>
+              <option value="Gunung Hutan">Gunung Hutan</option>
+              <option value="Panjat Tebing">Panjat Tebing</option>
+              <option value="Caving">Caving</option>
+              <option value="Peralatan Sekret">Peralatan Sekret</option>
+            </select>
+            <select
+              id="filterSort"
+              onchange="fetchItems()"
+              class="text-xs border-2 border-stone-200 rounded-xl px-3.5 py-2.5 bg-white font-medium focus:border-red-600"
+            >
+              <option value="newest">Terbaru Ditambahkan</option>
+              <option value="oldest">Terlama Ditambahkan</option>
+            </select>
+          </div>
+          <div class="flex items-center gap-2">
+            <button
+              onclick="exportToExcel('katalog')"
+              class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow transition-all flex items-center gap-1.5"
+            >
+              📊 Excel
+            </button>
+            <button
+              onclick="exportToPDF('katalog')"
+              class="bg-red-700 hover:bg-red-800 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow transition-all flex items-center gap-1.5"
+            >
+              📄 PDF
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Tabel Katalog -->
+          <div
+            class="lg:col-span-2 bg-white rounded-2xl shadow-sm border-2 border-stone-200 overflow-hidden flex flex-col"
+          >
+            <div
+              class="p-4 border-b-2 border-stone-100 font-bold text-xs text-stone-700 bg-red-950/5 flex items-center justify-between"
+            >
+              <span>DAFTAR INVENTARIS ALAT BERUANG MERAH</span>
+              <span
+                class="w-2.5 h-2.5 rounded-full bg-red-600 inline-block"
+              ></span>
+            </div>
+            <div class="table-container">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr
+                    class="border-b-2 border-stone-200 text-xs text-stone-500 uppercase bg-stone-50 tracking-wider font-bold"
+                  >
+                    <th class="p-4 whitespace-nowrap">Kode</th>
+                    <th class="p-4 whitespace-nowrap">Nama Alat</th>
+                    <th class="p-4 whitespace-nowrap">Kategori</th>
+                    <th class="p-4 whitespace-nowrap">Jumlah</th>
+                    <th class="p-4 whitespace-nowrap">Status</th>
+                    <th class="p-4 whitespace-nowrap">Kondisi</th>
+                    <th
+                      class="p-4 text-center action-col hidden whitespace-nowrap"
+                    >
+                      Aksi
+                    </th>
+                  </tr>
+                </thead>
+                <tbody
+                  id="inventoryTable"
+                  class="text-xs divide-y divide-stone-100 font-medium"
+                >
+                  <!-- Data di-load via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Form Tambah/Edit Alat (Admin Only) -->
+          <div
+            id="adminFormCard"
+            class="bg-white rounded-2xl shadow-sm border-2 border-stone-200 p-5 opacity-50 pointer-events-none transition-all"
+          >
+            <h3
+              id="formTitle"
+              class="font-bold text-xs text-stone-900 mb-4 border-b-2 border-stone-100 pb-2 flex items-center gap-2"
+            >
+              <span class="text-red-600">■</span> Tambah Data Alat
+            </h3>
+            <form id="itemForm" class="space-y-3">
+              <input type="hidden" id="edit_id" />
+              <div>
+                <label class="block text-[11px] font-bold text-stone-600 mb-1"
+                  >Kode Barang</label
+                >
+                <input
+                  type="text"
+                  id="kode_barang"
+                  required
+                  placeholder="e.g. Td-GHJ-001"
+                  class="w-full text-xs border-2 border-stone-200 rounded-xl p-2.5 focus:border-red-600"
+                />
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-stone-600 mb-1"
+                  >Nama Barang</label
+                >
+                <input
+                  type="text"
+                  id="nama_barang"
+                  required
+                  placeholder="e.g. Tenda Arey merah 4P"
+                  class="w-full text-xs border-2 border-stone-200 rounded-xl p-2.5 focus:border-red-600"
+                />
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-[11px] font-bold text-stone-600 mb-1"
+                    >Kategori</label
+                  >
+                  <select
+                    id="kategori"
+                    class="w-full text-xs border-2 border-stone-200 rounded-xl p-2.5 bg-white focus:border-red-600"
+                  >
+                    <option value="Semua">Semua Kategori</option>
+                    <option value="Gunung Hutan">Gunung Hutan</option>
+                    <option value="Panjat Tebing">Panjat Tebing</option>
+                    <option value="Caving">Caving</option>
+                    <option value="Peralatan Sekret">Peralatan Sekret</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-[11px] font-bold text-stone-600 mb-1"
+                    >Kondisi</label
+                  >
+                  <select
+                    id="kondisi"
+                    class="w-full text-xs border-2 border-stone-200 rounded-xl p-2.5 bg-white focus:border-red-600"
+                  >
+                    <option value="Baik / Layak Pakai">
+                      Baik / Layak Pakai
+                    </option>
+                    <option value="Rusak Ringan">Rusak Ringan</option>
+                    <option value="Rusak Berat">Rusak Berat</option>
+                  </select>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-[11px] font-bold text-stone-600 mb-1"
+                    >Jumlah</label
+                  >
+                  <input
+                    type="number"
+                    id="jumlah"
+                    required
+                    min="1"
+                    value="1"
+                    class="w-full text-xs border-2 border-stone-200 rounded-xl p-2.5 focus:border-red-600"
+                  />
+                </div>
+                <div>
+                  <label class="block text-[11px] font-bold text-stone-600 mb-1"
+                    >Satuan</label
+                  >
+                  <input
+                    type="text"
+                    id="satuan"
+                    required
+                    value="Unit"
+                    class="w-full text-xs border-2 border-stone-200 rounded-xl p-2.5 focus:border-red-600"
+                  />
+                </div>
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-stone-600 mb-1"
+                  >Lokasi Penyimpanan</label
+                >
+                <input
+                  type="text"
+                  id="lokasi"
+                  required
+                  placeholder="e.g. Rak A1 Sekretariat"
+                  class="w-full text-xs border-2 border-stone-200 rounded-xl p-2.5 focus:border-red-600"
+                />
+              </div>
+              <div class="flex gap-2 pt-2">
+                <button
+                  type="submit"
+                  id="btnSubmit"
+                  class="flex-1 bg-red-700 hover:bg-red-800 text-white font-bold text-xs py-2.5 rounded-xl shadow transition-all"
+                >
+                  Simpan Data Alat
+                </button>
+                <button
+                  type="button"
+                  id="btnCancel"
+                  onclick="resetForm()"
+                  class="hidden bg-stone-200 hover:bg-stone-300 text-stone-700 font-bold text-xs px-3 py-2.5 rounded-xl"
+                >
+                  Batal
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION: PEMINJAMAN -->
+      <section id="section-peminjaman" class="space-y-4 hidden">
+        <div
+          class="bg-white p-4 rounded-2xl shadow-sm border-2 border-stone-200 flex justify-between items-center"
+        >
+          <h2 class="font-bold text-xs text-stone-800 uppercase tracking-wider">
+            Manajemen Peminjaman Aktif
+          </h2>
+          <div class="flex gap-2">
+            <button
+              onclick="exportToExcel('peminjaman')"
+              class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow"
+            >
+              📊 Excel
+            </button>
+            <button
+              onclick="exportToPDF('peminjaman')"
+              class="bg-red-700 hover:bg-red-800 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow"
+            >
+              📄 PDF
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div
+            id="loanFormCard"
+            class="bg-white rounded-2xl shadow-sm border-2 border-stone-200 p-5 h-fit opacity-50 pointer-events-none transition-all"
+          >
+            <h3
+              class="font-bold text-xs text-stone-900 mb-4 border-b-2 border-stone-100 pb-2 flex items-center gap-2"
+            >
+              <span class="text-red-600">■</span> Form Pinjam Alat
+            </h3>
+            <form id="loanForm" onsubmit="submitLoan(event)" class="space-y-3">
+              <div>
+                <label class="block text-[11px] font-bold text-stone-600 mb-1"
+                  >Pilih Alat (Tersedia)</label
+                >
+                <select
+                  id="loan_item_id"
+                  required
+                  class="w-full text-xs border-2 border-stone-200 rounded-xl p-2.5 bg-white focus:border-red-600"
+                ></select>
+              </div>
+
+              <div>
+                <label class="block text-[11px] font-bold text-stone-600 mb-1"
+                  >Anggota yang Bertugas / Menerima</label
+                >
+                <input
+                  type="text"
+                  id="petugas_penerima"
+                  required
+                  placeholder="e.g. Siska (Logistik)"
+                  class="w-full text-xs border-2 border-stone-200 rounded-xl p-2.5 focus:border-red-600"
+                />
+              </div>
+
+              <div>
+                <label class="block text-[11px] font-bold text-stone-600 mb-1"
+                  >Nama Peminjam</label
+                >
+                <input
+                  type="text"
+                  id="loan_peminjam"
+                  required
+                  placeholder="e.g. Budi (Divisi RC)"
+                  class="w-full text-xs border-2 border-stone-200 rounded-xl p-2.5 focus:border-red-600"
+                />
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-stone-600 mb-1"
+                  >Tujuan / Kegiatan</label
+                >
+                <input
+                  type="text"
+                  id="loan_kegiatan"
+                  required
+                  placeholder="e.g. Latihan Tebing Siung"
+                  class="w-full text-xs border-2 border-stone-200 rounded-xl p-2.5 focus:border-red-600"
+                />
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-stone-600 mb-1"
+                  >Jaminan di Sekretariat</label
+                >
+                <input
+                  type="text"
+                  id="jaminan_sekret"
+                  required
+                  placeholder="e.g. STCK Motor / Jaket / Dompet"
+                  class="w-full text-xs border-2 border-stone-200 rounded-xl p-2.5 focus:border-red-600"
+                />
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-stone-600 mb-1"
+                  >Foto KTP / Identitas</label
+                >
+                <input
+                  type="file"
+                  id="loan_foto_ktp"
+                  accept="image/*"
+                  class="w-full text-xs border-2 border-stone-200 rounded-xl p-1 bg-stone-50"
+                />
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-stone-600 mb-1"
+                  >Minus / Cacat Awal</label
+                >
+                <input
+                  type="text"
+                  id="loan_minus_awal"
+                  value="Mulus / Aman"
+                  class="w-full text-xs border-2 border-stone-200 rounded-xl p-2.5 focus:border-red-600"
+                />
+              </div>
+              <button
+                type="submit"
+                class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs py-2.5 rounded-xl shadow transition-all"
+              >
+                Proses Peminjaman
+              </button>
+            </form>
+          </div>
+
+          <div
+            class="lg:col-span-2 bg-white rounded-2xl shadow-sm border-2 border-stone-200 overflow-hidden"
+          >
+            <div
+              class="p-4 border-b-2 border-stone-100 font-bold text-xs text-stone-700 bg-red-950/5"
+            >
+              Daftar Alat Sedang Dipinjam
+            </div>
+            <div class="table-container">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr
+                    class="border-b-2 border-stone-200 text-xs text-stone-500 uppercase bg-stone-50 tracking-wider font-bold"
+                  >
+                    <th class="p-4 whitespace-nowrap">Alat</th>
+                    <th class="p-4 whitespace-nowrap">Peminjam</th>
+                    <th class="p-4 whitespace-nowrap">Waktu Pinjam</th>
+                    <th class="p-4 whitespace-nowrap">Kegiatan</th>
+                    <th class="p-4 whitespace-nowrap">Jaminan & KTP</th>
+                    <th class="p-4 whitespace-nowrap">Minus Awal</th>
+                    <th
+                      class="p-4 text-center action-col hidden whitespace-nowrap"
+                    >
+                      Aksi
+                    </th>
+                  </tr>
+                </thead>
+                <tbody
+                  id="loanTable"
+                  class="text-xs divide-y divide-stone-100 font-medium"
+                ></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION: EKSPEDISI & CHECKLIST -->
+      <section id="section-ekspedisi" class="space-y-4 hidden">
+        <div
+          class="bg-white p-4 rounded-2xl shadow-sm border-2 border-stone-200 flex justify-between items-center"
+        >
+          <h2 class="font-bold text-xs text-stone-800 uppercase tracking-wider">
+            Manajemen Ekspedisi & Checklist Kelompok
+          </h2>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div
+            id="expeditionFormCard"
+            class="bg-white rounded-2xl shadow-sm border-2 border-stone-200 p-5 h-fit opacity-50 pointer-events-none transition-all"
+          >
+            <h3
+              class="font-bold text-xs text-stone-900 mb-4 border-b-2 border-stone-100 pb-2 flex items-center gap-2"
+            >
+              <span class="text-red-600">■</span> Buat Kegiatan Ekspedisi
+            </h3>
+            <form
+              id="expeditionForm"
+              onsubmit="submitExpedition(event)"
+              class="space-y-3"
+            >
+              <div>
+                <label class="block text-[11px] font-bold text-stone-600 mb-1"
+                  >Nama Kegiatan</label
+                >
+                <input
+                  type="text"
+                  id="exp_nama"
+                  required
+                  placeholder="e.g. Ekspedisi Kerinci 2026"
+                  class="w-full text-xs border-2 border-stone-200 rounded-xl p-2.5 focus:border-red-600"
+                />
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-stone-600 mb-1"
+                  >Lokasi Tujuan</label
+                >
+                <input
+                  type="text"
+                  id="exp_lokasi"
+                  required
+                  placeholder="e.g. Gunung Kerinci, Jambi"
+                  class="w-full text-xs border-2 border-stone-200 rounded-xl p-2.5 focus:border-red-600"
+                />
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-[11px] font-bold text-stone-600 mb-1"
+                    >Tgl Berangkat</label
+                  >
+                  <input
+                    type="date"
+                    id="exp_tgl_berangkat"
+                    required
+                    class="w-full text-xs border-2 border-stone-200 rounded-xl p-2.5 bg-white focus:border-red-600"
+                  />
+                </div>
+                <div>
+                  <label class="block text-[11px] font-bold text-stone-600 mb-1"
+                    >Tgl Pulang</label
+                  >
+                  <input
+                    type="date"
+                    id="exp_tgl_pulang"
+                    required
+                    class="w-full text-xs border-2 border-stone-200 rounded-xl p-2.5 bg-white focus:border-red-600"
+                  />
+                </div>
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-stone-600 mb-1"
+                  >Ketua Tim</label
+                >
+                <input
+                  type="text"
+                  id="exp_ketua"
+                  required
+                  placeholder="Nama Ketua Tim"
+                  class="w-full text-xs border-2 border-stone-200 rounded-xl p-2.5 focus:border-red-600"
+                />
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-stone-600 mb-1"
+                  >Catatan Logistik BHP (Bahan Habis Pakai)</label
+                >
+                <textarea
+                  id="exp_bhp"
+                  rows="2"
+                  placeholder="Gas tabung, baterai, parafin, dll"
+                  class="w-full text-xs border-2 border-stone-200 rounded-xl p-2.5 focus:border-red-600"
+                ></textarea>
+              </div>
+              <button
+                type="submit"
+                class="w-full bg-red-700 hover:bg-red-800 text-white font-bold text-xs py-2.5 rounded-xl shadow transition-all"
+              >
+                Buat Kegiatan
+              </button>
+            </form>
+          </div>
+
+          <div
+            class="lg:col-span-2 bg-white rounded-2xl shadow-sm border-2 border-stone-200 p-5 space-y-4"
+          >
+            <h3
+              class="font-bold text-xs text-stone-900 border-b-2 border-stone-100 pb-2"
+            >
+              Daftar Kegiatan Ekspedisi Aktif
+            </h3>
+            <div id="expeditionList" class="space-y-3"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION: MAINTENANCE -->
+      <section id="section-maintenance" class="space-y-4 hidden">
+        <div
+          class="bg-white p-4 rounded-2xl shadow-sm border-2 border-stone-200 flex justify-between items-center"
+        >
+          <h2 class="font-bold text-xs text-stone-800 uppercase tracking-wider">
+            Riwayat Perawatan & Perbaikan Alat
+          </h2>
+          <div class="flex gap-2">
+            <button
+              onclick="exportToExcel('maintenance')"
+              class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow"
+            >
+              📊 Excel
+            </button>
+            <button
+              onclick="exportToPDF('maintenance')"
+              class="bg-red-700 hover:bg-red-800 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow"
+            >
+              📄 PDF
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div
+            id="maintenanceFormCard"
+            class="bg-white rounded-2xl shadow-sm border-2 border-stone-200 p-5 h-fit opacity-50 pointer-events-none transition-all"
+          >
+            <h3
+              class="font-bold text-xs text-stone-900 mb-4 border-b-2 border-stone-100 pb-2 flex items-center gap-2"
+            >
+              <span class="text-red-600">■</span> Catat Perbaikan Alat
+            </h3>
+            <form
+              id="maintForm"
+              onsubmit="submitMaintenance(event)"
+              class="space-y-3"
+            >
+              <div>
+                <label class="block text-[11px] font-bold text-stone-600 mb-1"
+                  >Pilih Alat</label
+                >
+                <select
+                  id="maint_item_id"
+                  required
+                  class="w-full text-xs border-2 border-stone-200 rounded-xl p-2.5 bg-white focus:border-red-600"
+                ></select>
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-stone-600 mb-1"
+                  >Tindakan Perbaikan</label
+                >
+                <input
+                  type="text"
+                  id="maint_kegiatan"
+                  required
+                  placeholder="e.g. Ganti resleting tenda / cuci flysheet"
+                  class="w-full text-xs border-2 border-stone-200 rounded-xl p-2.5 focus:border-red-600"
+                />
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-stone-600 mb-1"
+                  >Metode Perbaikan</label
+                >
+                <select
+                  id="maint_metode"
+                  class="w-full text-xs border-2 border-stone-200 rounded-xl p-2.5 bg-white focus:border-red-600"
+                >
+                  <option value="Mandiri (Dikerjakan Internal Tim)">
+                    Mandiri (Dikerjakan Internal Tim)
+                  </option>
+                  <option value="Laundry / Service Luar">
+                    Laundry / Service Pihak Luar
+                  </option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-stone-600 mb-1"
+                  >Biaya (Rp)</label
+                >
+                <input
+                  type="number"
+                  id="maint_biaya"
+                  min="0"
+                  value="0"
+                  placeholder="0 jika dikerjakan mandiri"
+                  class="w-full text-xs border-2 border-stone-200 rounded-xl p-2.5 focus:border-red-600"
+                />
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-stone-600 mb-1"
+                  >Petugas / Penanggung Jawab</label
+                >
+                <input
+                  type="text"
+                  id="maint_petugas"
+                  required
+                  placeholder="Nama anggota"
+                  class="w-full text-xs border-2 border-stone-200 rounded-xl p-2.5 focus:border-red-600"
+                />
+              </div>
+              <button
+                type="submit"
+                class="w-full bg-red-700 hover:bg-red-800 text-white font-bold text-xs py-2.5 rounded-xl shadow transition-all"
+              >
+                Simpan Log Perbaikan
+              </button>
+            </form>
+          </div>
+
+          <div
+            class="lg:col-span-2 bg-white rounded-2xl shadow-sm border-2 border-stone-200 overflow-hidden"
+          >
+            <div
+              class="p-4 border-b-2 border-stone-100 font-bold text-xs text-stone-700 bg-red-950/5"
+            >
+              Log Riwayat Perbaikan
+            </div>
+            <div class="table-container">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr
+                    class="border-b-2 border-stone-200 text-xs text-stone-500 uppercase bg-stone-50 tracking-wider font-bold"
+                  >
+                    <th class="p-4 whitespace-nowrap">Waktu</th>
+                    <th class="p-4 whitespace-nowrap">Nama Alat</th>
+                    <th class="p-4 whitespace-nowrap">Tindakan & Metode</th>
+                    <th class="p-4 whitespace-nowrap">Biaya</th>
+                    <th class="p-4 whitespace-nowrap">Penanggung Jawab</th>
+                  </tr>
+                </thead>
+                <tbody
+                  id="maintTable"
+                  class="text-xs divide-y divide-stone-100 font-medium"
+                ></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- MODAL CHECKLIST EKSPEDISI -->
+    <div
+      id="checklistModal"
+      class="hidden fixed inset-0 bg-stone-950/60 flex items-center justify-center p-4 z-50 backdrop-blur-sm"
+    >
+      <div
+        class="bg-white rounded-2xl max-w-2xl w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl border-2 border-stone-200"
+      >
+        <div
+          class="flex justify-between items-center border-b-2 border-stone-100 pb-3"
+        >
+          <h3
+            id="modalExpTitle"
+            class="font-bold text-sm text-stone-900 uppercase"
+          >
+            Checklist Alat Ekspedisi
+          </h3>
+          <button
+            onclick="closeChecklistModal()"
+            class="text-stone-400 hover:text-stone-900 font-bold text-lg"
+          >
+            ✕
+          </button>
+        </div>
+
+        <form
+          id="checklistFormCard"
+          onsubmit="addChecklistItem(event)"
+          class="grid grid-cols-1 sm:grid-cols-3 gap-2 bg-red-950/5 p-4 rounded-xl border-2 border-red-950/10 opacity-50 pointer-events-none transition-all"
+        >
+          <input type="hidden" id="modal_exp_id" />
+          <div class="sm:col-span-3">
+            <label class="block text-[10px] font-bold text-stone-700 mb-1"
+              >Pilih Alat untuk Dibawa</label
+            >
+            <select
+              id="check_item_id"
+              required
+              class="w-full text-xs border-2 border-stone-200 rounded-xl p-2.5 bg-white focus:border-red-600"
+            ></select>
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-stone-700 mb-1"
+              >PIC Alat</label
+            >
+            <input
+              type="text"
+              id="check_pic"
+              required
+              placeholder="Nama penanggung jawab"
+              class="w-full text-xs border-2 border-stone-200 rounded-xl p-2.5 focus:border-red-600"
+            />
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-stone-700 mb-1"
+              >Catatan Kondisi Awal</label
+            >
+            <input
+              type="text"
+              id="check_catatan"
+              placeholder="e.g. Mulus"
+              class="w-full text-xs border-2 border-stone-200 rounded-xl p-2.5 focus:border-red-600"
+            />
+          </div>
+          <div class="flex items-end">
+            <button
+              type="submit"
+              class="w-full bg-red-700 hover:bg-red-800 text-white font-bold text-xs py-2.5 rounded-xl shadow"
+            >
+              Tambah Alat
+            </button>
+          </div>
+        </form>
+
+        <div class="table-container">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr
+                class="bg-stone-100 border-b-2 border-stone-200 text-stone-600 uppercase tracking-wider font-bold"
+              >
+                <th class="p-3">Alat</th>
+                <th class="p-3">PIC</th>
+                <th class="p-3">Status Bawa</th>
+                <th class="p-3">Kondisi Pulang</th>
+                <th class="p-3 text-center action-col hidden">Aksi</th>
+              </tr>
+            </thead>
+            <tbody
+              id="checklistTableBody"
+              class="divide-y divide-stone-100 font-medium"
+            ></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCRIPT LINK -->
+    <script src="script.js"></script>
+  </body>
+</html>

@@ -1,0 +1,174 @@
+/* ==========================================================================
+   SISTEM LOGISTIK & KATALOG - ANGKATAN BERUANG MERAH
+   Responsive Compact CSS for Mobile & Desktop Professional Layout
+   ========================================================================== */
+
+/* Global Smooth Styling & Typography */
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  background-color: #fafaf9;
+  color: #1c1917;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  padding-bottom: 3rem;
+}
+
+/* Custom Scrollbar for Tables & Containers */
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 1rem;
+}
+
+.table-container::-webkit-scrollbar {
+  height: 5px;
+  width: 5px;
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: #f5f5f4;
+  border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: #dc2626;
+  border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: #b91c1c;
+}
+
+/* Hide Scrollbar Utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Form Elements Focus & Touch Optimization */
+input,
+select,
+textarea {
+  transition: all 0.2s ease-in-out;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: #dc2626 !important;
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.12);
+}
+
+/* Table Hover & Padding Enhancements */
+table tbody tr {
+  transition: background-color 0.15s ease-in-out;
+}
+
+table tbody tr:hover {
+  background-color: #fef2f2;
+}
+
+table th,
+table td {
+  padding: 12px 16px;
+  vertical-align: middle;
+}
+
+/* ==========================================================================
+   MOBILE COMPACT & PROFESSIONAL RESPONSIVE OPTIMIZATION (< 640px)
+   ========================================================================== */
+@media screen and (max-width: 640px) {
+  /* Prevent iOS zoom on input focus */
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  /* Compact Main Container Spacing */
+  main {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+    margin-top: 0.75rem !important;
+  }
+
+  /* Compact Header Spacing */
+  header .max-w-7xl {
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+    gap: 0.5rem !important;
+  }
+
+  header h1 {
+    font-size: 1rem !important;
+    letter-spacing: normal !important;
+  }
+
+  /* Tighter Grid Gaps for Mobile Stats */
+  .grid-cols-2 {
+    gap: 0.35rem !important;
+  }
+
+  .grid-cols-2 > div {
+    padding: 0.65rem !important;
+    border-radius: 0.75rem !important;
+  }
+
+  .grid-cols-2 div h3 {
+    font-size: 1.15rem !important;
+    margin-top: 0.1rem !important;
+  }
+
+  /* Compact Navigation Tabs */
+  .flex.border-b-2 {
+    overflow-x: auto;
+    padding: 0.25rem !important;
+    gap: 0.25rem !important;
+    border-radius: 0.75rem 0.75rem 0 0 !important;
+  }
+
+  .flex.border-b-2 button {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 10px !important;
+    white-space: nowrap;
+  }
+
+  /* Compact Table Padding for Mobile */
+  table th,
+  table td {
+    padding: 8px 10px !important;
+    font-size: 10.5px !important;
+  }
+
+  .table-container {
+    border-radius: 0.75rem;
+    border: 1px solid #e7e5e4;
+  }
+
+  /* Compact Form Cards on Mobile */
+  .space-y-4 > div,
+  .p-5 {
+    padding: 0.85rem !important;
+    border-radius: 0.85rem !important;
+  }
+
+  /* Modal Adjustments for Mobile */
+  #aboutModal > div,
+  #checklistModal > div {
+    margin: 0.5rem;
+    max-height: 85vh;
+    padding: 1rem !important;
+    border-radius: 1.25rem !important;
+  }
+}
